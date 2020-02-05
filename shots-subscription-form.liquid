@@ -1,0 +1,47 @@
+{%comment%}Don't make change in this page{%endcomment%}                                                                                                                                                                                                                                                                                                                                                                                                                                                                      {%- assign product = all_products[product_url] -%}                                                                                                                                                                                                                   
+<div id="product-{{ product.handle }}" class="product-page product-template prod-{{ section.id }}" data-section-type="product-section" data-product-id="{{ product.id }}" data-section-id="{{ section.id }}" style="display: none;">
+ <h4>{{ product.title }}</h4>
+ {% assign current_variant = product.selected_or_first_available_variant %}
+ {% form 'product', product, data-productid: product.id, data-product-form:product_form_config %}
+  <!-- Begin ReCharge code -->
+  {% if product.available %}{% include 'subscription-product' %}{% endif %}
+   <!-- End ReCharge code -->
+  {%- if settings.show_multiple_currencies -%}
+    {% assign price = current_variant.price | money_with_currency %}
+    {% assign compare_price = current_variant.compare_at_price | money_with_currency %}
+  {%- else -%}
+    {% assign price = current_variant.price | money %}
+    {% assign compare_price = current_variant.compare_at_price | money %}
+  {%- endif -%}
+  {%- if current_variant.compare_at_price > current_variant.price -%}
+    {% assign onsale = true %}
+  {%- endif -%}
+  <div id="product-price-{{ product.id }}">
+    <span class="product-price" itemprop="price">
+      <span class="{% if onsale %}onsale{% endif %} money">{{ price }}</span>
+    </span>
+    {% if onsale %}
+      {% assign save = product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price | ceil %}{% if save > 10 %}<span class="percent-off">{{ save }}% Off</span>{% endif %}
+    {% else %}
+      <span class="was"></span>
+    {% endif %}
+  </div>
+  <select id="product-select-{{ product.id }}" class="form-product-selector" name="id" data-productid="{{ product.id }}"{% if product.variants.size == 1 %} style="display: none;"{% endif %}>
+    {% for variant in product.variants %}
+    <option value="{{ variant.id }}" data-price="{{ variant.price | money }}" {% if variant == current_variant %}selected="selected"{% endif %}>{{ variant.title }} - {{ variant.price | money }}</option>
+    {% endfor %}
+  </select>
+  <input type="hidden" name="properties[Package]" class="question1input" value="" />
+  <input type="hidden" name="properties[Delivery]" class="question2input" value="" />
+  <input type="hidden" name="properties[Interval]" class="question3input" value="" />
+  {% if current_variant.available %}
+    <div class="product-add">
+       <input id="AddToCart-{{ product.id }}" type="submit" name="button" class="add{% if section.settings.show_payment_button %} secondary-button{% endif %}" value="{{ 'products.product.add_to_cart' | t }}" />
+    </div>
+  {% else %}
+    <div class="product-add">
+       <input id="AddToCart-{{ product.id }}" type="submit" name="button" class="add{% if section.settings.show_payment_button %} secondary-button{% endif %}" value="{{ 'products.product.sold_out' | t }}" />
+    </div>
+  {% endif %}
+ {% endform %}
+</div>
